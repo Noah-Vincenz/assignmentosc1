@@ -141,8 +141,7 @@ public:
             if (newSpace > 16) {
                 char * x = bestAddress + requested + 16;
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
-                MemControlBlock * oldPrev;
-                MemControlBlock * oldNext;
+                MemControlBlock * oldNext = nullptr;
                 if (bestSoFar->next) {
                     oldNext = bestSoFar->next;
                     newMCB->next = oldNext;
