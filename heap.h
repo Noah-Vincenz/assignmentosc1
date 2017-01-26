@@ -51,7 +51,7 @@ public:
     
     Heap(const size_t sizeIn)
         : memory(new char[sizeIn]) {
-            
+
         // make a MemControlBlock at the start of the reserved memory
         startOfHeap = new(memory) MemControlBlock(// true = is available
                                                   true, 
@@ -90,10 +90,77 @@ public:
      * If no block is big enough, it returns nullptr.
      */
     char * allocateMemoryBestFit(size_t requested) {
-        // TODO: your code for allocateMemory memory goes here
-
-        return nullptr;
-        
+        /*
+        char * const memory = new char[sizeIn];
+        mcb = new (memory) MemControlBlock(true, );
+         */
+        cout << "Initial requested: " << requested << endl;
+        int mod = requested % 4;
+        if (mod == 1) {
+            requested -= 1;
+        }
+        if (mod == 2) {
+            requested -= 2;
+        }
+        if (mod == 3) {
+            requested += 1;
+        }
+        cout << "This is the requested space:  "<< requested << endl;
+        print();
+        MemControlBlock * curr = startOfHeap;
+        MemControlBlock * bestSoFar = nullptr;
+        int currMinSize = -1;
+        int minSize = 0;
+        int index = 0;
+        char * currAddressMCB = reinterpret_cast<char*>(memory);
+        char * bestAddress;
+        for (int i = 0; curr; ++i, curr = curr->next) {
+            cout << "Loop " << i << endl;
+            if (curr->available && curr->size >= requested) {
+                cout << "Curr.size is > than requested. It is " << curr->size << endl;
+                cout << "Prev of curr: " << curr->previous << endl;
+                cout << "Next of curr: " << curr->next << endl;
+                minSize = curr->size - requested;
+                if (currMinSize == -1 || minSize < currMinSize) {
+                    currMinSize = minSize;
+                    bestSoFar = curr;
+                    bestAddress = currAddressMCB;
+                }
+            }
+            currAddressMCB += curr->size;
+        }
+        if (bestSoFar == nullptr) {
+            cout << "no best so far found" << endl;
+            return nullptr;
+        }
+        else {
+            bestSoFar->available = false;
+            int oldSpace = bestSoFar->size;
+            int newSpace = oldSpace - requested;
+            bestSoFar->size = newSpace;
+            if (newSpace > 16) {
+                char * x = bestAddress + requested + 16;
+                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
+                MemControlBlock * oldPrev;
+                MemControlBlock * oldNext;
+                if (bestSoFar->next) {
+                    oldNext = bestSoFar->next;
+                    newMCB->next = oldNext;
+                    oldNext->previous = newMCB;
+                }
+                newMCB->previous = bestSoFar;
+                bestSoFar->next = newMCB;
+                bestSoFar->size = requested;
+                cout << "jsjfksdf" << endl;
+            }
+            //char * x = new char[4];
+            //return x;
+            return bestAddress + 16;
+            //return new (bestAddress + 16)char[requested];
+            //return y;
+//            return new (c) MemControlBlock(true, );
+            //return new char[bestAddress + 16];
+        }
     }
     
     /** @brief Deallocate the memory used by the object at the given address */
