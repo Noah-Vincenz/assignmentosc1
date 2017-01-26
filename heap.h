@@ -145,20 +145,15 @@ public:
                 if (bestSoFar->next) {
                     oldNext = bestSoFar->next;
                     newMCB->next = oldNext;
-                    oldNext->previous = newMCB;
+                    //free(oldNext);
+                    //oldNext->previous = newMCB; // --------
+                    //*oldNext->previous = *newMCB; // --------
                 }
                 newMCB->previous = bestSoFar;
                 bestSoFar->next = newMCB;
                 bestSoFar->size = requested;
-                cout << "jsjfksdf" << endl;
             }
-            //char * x = new char[4];
-            //return x;
             return bestAddress + 16;
-            //return new (bestAddress + 16)char[requested];
-            //return y;
-//            return new (c) MemControlBlock(true, );
-            //return new char[bestAddress + 16];
         }
     }
     
