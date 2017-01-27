@@ -117,7 +117,7 @@ public:
                     index = i+1;
                 }
             }
-            currAddressMCB += curr->size;
+            currAddressMCB = currAddressMCB + curr->size + 16;
         }
         if (bestSoFar == nullptr) {
             cout << "no best found" << endl;
@@ -127,7 +127,6 @@ public:
             bestSoFar->available = false;
             int oldSpace = bestSoFar->size;
             int newSpace = oldSpace - requested;
-            //bestSoFar->size = newSpace;
             if (newSpace > 16) {
                 char * x = bestAddress + requested + 16 * index; //added * 16
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace - 16);
