@@ -105,7 +105,6 @@ public:
         char * bestAddress;
         for (int i = 0; curr; ++i, curr = curr->next) {
             cout << "Loop " << i << endl;
-            cout << "CurrentAddressMCB = " << currAddressMCB << endl;
             if (curr->available && curr->size >= requested) {
                 cout << "Curr.size is > than requested. It is " << curr->size << endl;
                 cout << "Prev of curr: " << curr->previous << endl;
