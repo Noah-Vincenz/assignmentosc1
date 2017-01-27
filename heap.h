@@ -133,7 +133,7 @@ public:
                 if (bestSoFar->next) {
                     MemControlBlock * oldNext = bestSoFar->next; //--------
                     newMCB->next = oldNext; //------
-                    oldNext->previous = newMCB; // --------
+                    //oldNext->previous = newMCB; // --------errrror here
                 }
                 bestSoFar->next = newMCB;
                 newMCB->previous = bestSoFar;
