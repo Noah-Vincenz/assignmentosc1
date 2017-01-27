@@ -100,7 +100,6 @@ public:
         MemControlBlock * bestSoFar = nullptr;
         int currMinSize = -1;
         int minSize = 0;
-        int index = 0;
         char * currAddressMCB = reinterpret_cast<char*>(memory);
         char * bestAddress;
         for (int i = 0; curr; ++i, curr = curr->next) {
@@ -116,11 +115,10 @@ public:
                     bestAddress = currAddressMCB;
                 }
             }
-            cout << "Curr-> size = " << curr->size << endl;
             currAddressMCB += curr->size;
         }
         if (bestSoFar == nullptr) {
-            cout << "no best so far found" << endl;
+            cout << "no best found" << endl;
             return nullptr;
         }
         else {
@@ -129,16 +127,16 @@ public:
             int newSpace = oldSpace - requested;
             bestSoFar->size = newSpace;
             if (newSpace > 16) {
+                cout << "space for another MCB" << endl;
                 char * x = bestAddress + requested + 16;
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
                 if (bestSoFar->next) {
-                    //MemControlBlock * oldNext = bestSoFar->next; //--------
-                    //newMCB->next = oldNext; //------
-                    //free(oldNext);
-                    //oldNext->previous = newMCB; // --------
+                    MemControlBlock * oldNext = bestSoFar->next; //--------
+                    newMCB->next = oldNext; //------
+                    oldNext->previous = newMCB; // --------
                 }
-                newMCB->previous = bestSoFar;
                 bestSoFar->next = newMCB;
+                newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
             }
             return bestAddress + 16;
