@@ -90,20 +90,9 @@ public:
      * If no block is big enough, it returns nullptr.
      */
     char * allocateMemoryBestFit(size_t requested) {
-        /*
-        char * const memory = new char[sizeIn];
-        mcb = new (memory) MemControlBlock(true, );
-         */
-        cout << "Initial requested: " << requested << endl;
         int mod = requested % 4;
-        if (mod == 1) {
-            requested -= 1;
-        }
-        if (mod == 2) {
-            requested -= 2;
-        }
-        if (mod == 3) {
-            requested += 1;
+        if (mod != 0) {
+            requested = requested + 4 - mod;
         }
         cout << "This is the requested space:  "<< requested << endl;
         print();
@@ -116,6 +105,7 @@ public:
         char * bestAddress;
         for (int i = 0; curr; ++i, curr = curr->next) {
             cout << "Loop " << i << endl;
+            cout << "CurrentAddressMCB = " << currAddressMCB << endl;
             if (curr->available && curr->size >= requested) {
                 cout << "Curr.size is > than requested. It is " << curr->size << endl;
                 cout << "Prev of curr: " << curr->previous << endl;
@@ -127,6 +117,7 @@ public:
                     bestAddress = currAddressMCB;
                 }
             }
+            cout << "Curr-> size = " << curr->size << endl;
             currAddressMCB += curr->size;
         }
         if (bestSoFar == nullptr) {
@@ -141,13 +132,11 @@ public:
             if (newSpace > 16) {
                 char * x = bestAddress + requested + 16;
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
-                MemControlBlock * oldNext = nullptr;
                 if (bestSoFar->next) {
-                    oldNext = bestSoFar->next;
-                    newMCB->next = oldNext;
+                    //MemControlBlock * oldNext = bestSoFar->next; //--------
+                    //newMCB->next = oldNext; //------
                     //free(oldNext);
                     //oldNext->previous = newMCB; // --------
-                    //*oldNext->previous = *newMCB; // --------
                 }
                 newMCB->previous = bestSoFar;
                 bestSoFar->next = newMCB;
