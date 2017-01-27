@@ -102,6 +102,7 @@ public:
         int minSize = 0;
         char * currAddressMCB = reinterpret_cast<char*>(memory);
         char * bestAddress;
+        int index = -1;
         for (int i = 0; curr; ++i, curr = curr->next) {
             cout << "Loop " << i << endl;
             if (curr->available && curr->size >= requested) {
@@ -113,6 +114,7 @@ public:
                     currMinSize = minSize;
                     bestSoFar = curr;
                     bestAddress = currAddressMCB;
+                    index = i+1;
                 }
             }
             currAddressMCB += curr->size;
@@ -125,19 +127,19 @@ public:
             bestSoFar->available = false;
             int oldSpace = bestSoFar->size;
             int newSpace = oldSpace - requested;
-            bestSoFar->size = newSpace;
+            //bestSoFar->size = newSpace;
             if (newSpace > 16) {
-                cout << "space for another MCB" << endl;
-                char * x = bestAddress + requested + 16;
-                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
-                if (bestSoFar->next) {
+                char * x = bestAddress + requested + 16 * index; //added * 16
+                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace - 16);
+                if (bestSoFar->next != nullptr) {
                     MemControlBlock * oldNext = bestSoFar->next; //--------
                     newMCB->next = oldNext; //------
-                    //oldNext->previous = newMCB; // --------errrror here
+                    oldNext->previous = newMCB; // --------errrror here
                 }
                 bestSoFar->next = newMCB;
                 newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
+                cout << "bestSoFar.size =  " << bestSoFar->size << endl;
             }
             return bestAddress + 16;
         }
