@@ -94,51 +94,41 @@ public:
         if (mod != 0) {
             requested = requested + 4 - mod;
         }
-        cout << "This is the requested space:  "<< requested << endl;
-        print();
         MemControlBlock * curr = startOfHeap;
         MemControlBlock * bestSoFar = nullptr;
         int currMinSize = -1;
         int minSize = 0;
         char * currAddressMCB = reinterpret_cast<char*>(memory);
         char * bestAddress;
-        int index = -1;
         for (int i = 0; curr; ++i, curr = curr->next) {
-            cout << "Loop " << i << endl;
             if (curr->available && curr->size >= requested) {
-                cout << "Curr.size is > than requested. It is " << curr->size << endl;
-                cout << "Prev of curr: " << curr->previous << endl;
-                cout << "Next of curr: " << curr->next << endl;
                 minSize = curr->size - requested;
                 if (currMinSize == -1 || minSize < currMinSize) {
                     currMinSize = minSize;
                     bestSoFar = curr;
                     bestAddress = currAddressMCB;
-                    index = i+1;
                 }
             }
             currAddressMCB = currAddressMCB + curr->size + 16;
         }
         if (bestSoFar == nullptr) {
-            cout << "no best found" << endl;
             return nullptr;
         }
         else {
             bestSoFar->available = false;
             int oldSpace = bestSoFar->size;
-            int newSpace = oldSpace - requested;
+            int newSpace = oldSpace - requested - 16; //sure about -16?
             if (newSpace > 16) {
-                char * x = bestAddress + requested + 16 * index; //added * 16
-                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace - 16);
+                char * x = bestAddress + requested + 16;
+                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
                 if (bestSoFar->next != nullptr) {
-                    MemControlBlock * oldNext = bestSoFar->next; //--------
-                    newMCB->next = oldNext; //------
-                    oldNext->previous = newMCB; // --------errrror here
+                    MemControlBlock * oldNext = bestSoFar->next;
+                    newMCB->next = oldNext;
+                    oldNext->previous = newMCB;
                 }
                 bestSoFar->next = newMCB;
                 newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
-                cout << "bestSoFar.size =  " << bestSoFar->size << endl;
             }
             return bestAddress + 16;
         }
