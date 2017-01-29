@@ -146,16 +146,16 @@ public:
                 curr->available = true;
                 if (curr->previous && curr->previous->available == true) { //merge together //problem
                     curr->previous->size = curr->previous->size + 16 + curr->size;
+                    if (curr->next) {
+                        curr->previous->next = curr->next;
+                        curr->next->previous = curr->previous;
+                    }
+                    else {
+                        curr->previous->next = nullptr;
+                    }
+                    curr->next = nullptr;
+                    curr->previous = nullptr;
                 }
-                if (curr->next) {
-                    curr->previous->next = curr->next;
-                    curr->next->previous = curr->previous;
-                }
-                else {
-                    curr->previous->next = nullptr;
-                }
-                curr->next = nullptr;
-                curr->previous = nullptr;
             }
             currAddressMCB = currAddressMCB + curr->size + 16;
         }
