@@ -130,9 +130,6 @@ public:
                 newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
             }
-            else { //-------------
-                bestSoFar->size -= requested;
-            }
             return bestAddress + 16;
         }
     }
