@@ -144,7 +144,7 @@ public:
         for (int i = 0; curr; ++i, curr = curr->next) {
             if (currAddressMCB == addressOfMCB) {
                 curr->available = true;
-                if (curr->previous->available == true) { //merge together
+                if (curr->previous && curr->previous->available == true) { //merge together //problem
                     curr->previous->size = curr->previous->size + 16 + curr->size;
                 }
                 if (curr->next) {
