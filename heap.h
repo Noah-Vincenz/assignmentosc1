@@ -121,7 +121,7 @@ public:
             if (newSpace > 16) {
                 char * x = bestAddress + requested + 16;
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
-                if (bestSoFar->next != nullptr) {
+                if (bestSoFar->next) {
                     MemControlBlock * oldNext = bestSoFar->next;
                     newMCB->next = oldNext;
                     oldNext->previous = newMCB;
@@ -137,9 +137,28 @@ public:
     /** @brief Deallocate the memory used by the object at the given address */
     void deallocateMemory(char * toDeallocate) {
         // TODO: your code for deallocateMemory memory goes here
-
-        
-        
+        char * addressOfMCB = reinterpret_cast<char*>(toDeallocate);
+        addressOfMCB -= 16;
+        MemControlBlock * curr = startOfHeap;
+        char * currAddressMCB = reinterpret_cast<char*>(memory);
+        for (int i = 0; curr; ++i, curr = curr->next) {
+            if (currAddressMCB == addressOfMCB) {
+                curr->available = true;
+                if (curr->previous->available == true) { //merge together
+                    curr->previous->size = curr->previous->size + 16 + curr->size;
+                }
+                if (curr->next) {
+                    curr->previous->next = curr->next;
+                    curr->next->previous = curr->previous;
+                }
+                else {
+                    curr->previous->next = nullptr;
+                }
+                curr->next = nullptr;
+                curr->previous = nullptr;
+            }
+            currAddressMCB = currAddressMCB + curr->size + 16;
+        }
     }
 };
 
