@@ -130,10 +130,13 @@ public:
                 newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
             }
+            else { //-------------
+                bestSoFar->size -= requested;
+            }
             return bestAddress + 16;
         }
     }
-    
+
     /** @brief Deallocate the memory used by the object at the given address */
     void deallocateMemory(char * toDeallocate) {
         // TODO: your code for deallocateMemory memory goes here
@@ -144,8 +147,8 @@ public:
         for (int i = 0; curr; ++i, curr = curr->next) {
             if (currAddressMCB == addressOfMCB) {
                 curr->available = true;
-                if (curr->previous && curr->previous->available == true) { //merge together //problem
-                    curr->previous->size = curr->previous->size + 16 + curr->size;
+                if (curr->previous && curr->previous->available == true) { //merge together
+                    curr->previous->size = curr->previous->size + curr->size + 16;
                     if (curr->next) {
                         curr->previous->next = curr->next;
                         curr->next->previous = curr->previous;
@@ -155,6 +158,16 @@ public:
                     }
                     curr->next = nullptr;
                     curr->previous = nullptr;
+                }
+                //not sure about this one
+                if (curr->next && curr->next->available == true) { //merge together
+                    curr->size = curr->size + 16 + curr->next->size;
+                    if (curr->next->next) {
+                        curr->next = curr->next->next;
+                        curr->next->next->previous = curr;
+                        curr->next->previous = nullptr;
+                        curr->next->next = nullptr;
+                    }
                 }
             }
             currAddressMCB = currAddressMCB + curr->size + 16;
