@@ -99,7 +99,7 @@ public:
         int currMinSize = -1;
         int minSize = 0;
         char * currAddressMCB = reinterpret_cast<char*>(getStartOfHeap());
-        char * bestAddress;
+        char * bestAddress = nullptr;
         for (int i = 0; curr; ++i, curr = curr->next) {
             if (curr->available && curr->size >= requested) {
                 minSize = curr->size - requested;
@@ -109,7 +109,7 @@ public:
                     bestAddress = currAddressMCB;
                 }
             }
-            currAddressMCB = currAddressMCB + curr->size + 16;
+            currAddressMCB = currAddressMCB + curr->size + sizeof(MemControlBlock);
         }
         if (bestSoFar == nullptr) {
             return nullptr;
@@ -117,10 +117,10 @@ public:
         else {
             bestSoFar->available = false;
             int oldSpace = bestSoFar->size;
-            int newSpace = oldSpace - requested - 16;
+            int newSpace = oldSpace - requested;
             if (newSpace >= 16) {
-                char * x = bestAddress + requested + 16;
-                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
+                char * x = bestAddress + sizeof(MemControlBlock) + requested;
+                MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace - sizeof(MemControlBlock));
                 if (bestSoFar->next) {
                     MemControlBlock * oldNext = bestSoFar->next;
                     newMCB->next = oldNext;
@@ -130,46 +130,38 @@ public:
                 newMCB->previous = bestSoFar;
                 bestSoFar->size = requested;
             }
-            return bestAddress + 16;
+            else {
+                bestSoFar->size = oldSpace;
+            }
+            return bestAddress + sizeof(MemControlBlock);
         }
     }
 
     /** @brief Deallocate the memory used by the object at the given address */
     void deallocateMemory(char * toDeallocate) {
         char * addressOfMCB = reinterpret_cast<char*>(toDeallocate);
-        addressOfMCB -= 16;
-        MemControlBlock * curr = startOfHeap;
-        char * currAddressMCB = reinterpret_cast<char*>(getStartOfHeap());
-        for (int i = 0; curr; ++i, curr = curr->next) {
-            if (currAddressMCB == addressOfMCB) {
-                curr->available = true;
-                //not sure about this one
-                if (curr->next && curr->next->available == true) { //merge together
-                    curr->size = curr->size + 16 + curr->next->size;
-                    if (curr->next->next) {
-                        curr->next = curr->next->next;
-                        curr->next->next->previous = curr;
-                        curr->next->previous = nullptr;
-                        curr->next->next = nullptr;
-                    }
-                    else {
-                        curr->next = nullptr;
-                    }
-                }
-                if (curr->previous && curr->previous->available == true) { //merge together
-                    curr->previous->size = curr->previous->size + curr->size + 16;
-                    if (curr->next) {
-                        curr->previous->next = curr->next;
-                        curr->next->previous = curr->previous;
-                    }
-                    else {
-                        curr->previous->next = nullptr;
-                    }
-                    curr->next = nullptr;
-                    curr->previous = nullptr;
-                }
+        addressOfMCB -= sizeof(MemControlBlock);
+        MemControlBlock * curr = reinterpret_cast<MemControlBlock*> (addressOfMCB);
+        curr->available = true;
+        if (curr->next && curr->next->available == true) {
+            curr->size = curr->size + sizeof(MemControlBlock) + curr->next->size;
+            if (curr->next->next) {
+                curr->next = curr->next->next;
+                curr->next->next->previous = curr;
             }
-            currAddressMCB = currAddressMCB + curr->size + 16;
+            else {
+                curr->next = nullptr;
+            }
+        }
+        if (curr->previous && curr->previous->available == true) {
+            curr->previous->size = curr->previous->size + sizeof(MemControlBlock) + curr->size;
+            if (curr->next) {
+                curr->previous->next = curr->next;
+                curr->next->previous = curr->previous;
+            }
+            else {
+                curr->previous->next = nullptr;
+            }
         }
     }
 };
