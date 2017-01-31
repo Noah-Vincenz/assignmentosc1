@@ -98,7 +98,7 @@ public:
         MemControlBlock * bestSoFar = nullptr;
         int currMinSize = -1;
         int minSize = 0;
-        char * currAddressMCB = reinterpret_cast<char*>(memory);
+        char * currAddressMCB = reinterpret_cast<char*>(getStartOfHeap());
         char * bestAddress;
         for (int i = 0; curr; ++i, curr = curr->next) {
             if (curr->available && curr->size >= requested) {
@@ -117,8 +117,8 @@ public:
         else {
             bestSoFar->available = false;
             int oldSpace = bestSoFar->size;
-            int newSpace = oldSpace - requested - 16; //sure about -16?
-            if (newSpace > 16) {
+            int newSpace = oldSpace - requested - 16;
+            if (newSpace >= 16) {
                 char * x = bestAddress + requested + 16;
                 MemControlBlock * newMCB = new(x) MemControlBlock(true, newSpace);
                 if (bestSoFar->next) {
@@ -136,14 +136,26 @@ public:
 
     /** @brief Deallocate the memory used by the object at the given address */
     void deallocateMemory(char * toDeallocate) {
-        // TODO: your code for deallocateMemory memory goes here
         char * addressOfMCB = reinterpret_cast<char*>(toDeallocate);
         addressOfMCB -= 16;
         MemControlBlock * curr = startOfHeap;
-        char * currAddressMCB = reinterpret_cast<char*>(memory);
+        char * currAddressMCB = reinterpret_cast<char*>(getStartOfHeap());
         for (int i = 0; curr; ++i, curr = curr->next) {
             if (currAddressMCB == addressOfMCB) {
                 curr->available = true;
+                //not sure about this one
+                if (curr->next && curr->next->available == true) { //merge together
+                    curr->size = curr->size + 16 + curr->next->size;
+                    if (curr->next->next) {
+                        curr->next = curr->next->next;
+                        curr->next->next->previous = curr;
+                        curr->next->previous = nullptr;
+                        curr->next->next = nullptr;
+                    }
+                    else {
+                        curr->next = nullptr;
+                    }
+                }
                 if (curr->previous && curr->previous->available == true) { //merge together
                     curr->previous->size = curr->previous->size + curr->size + 16;
                     if (curr->next) {
@@ -155,16 +167,6 @@ public:
                     }
                     curr->next = nullptr;
                     curr->previous = nullptr;
-                }
-                //not sure about this one
-                if (curr->next && curr->next->available == true) { //merge together
-                    curr->size = curr->size + 16 + curr->next->size;
-                    if (curr->next->next) {
-                        curr->next = curr->next->next;
-                        curr->next->next->previous = curr;
-                        curr->next->previous = nullptr;
-                        curr->next->next = nullptr;
-                    }
                 }
             }
             currAddressMCB = currAddressMCB + curr->size + 16;
